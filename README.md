@@ -21,7 +21,7 @@ samples, guidance on mobile development, and a full API reference.
  ### New user create
  <img src = 'photo_2021-01-02_22-23-03.jpg'></img>
   ### Main page
- <img src = 'photo_2021-01-02_22-24-23.jpg'></img>
+ <img src = 'photo_2021-01-02_22-35-42.jpg'></img>
  ### Chatting 
   <img src = 'photo_2021-01-02_22-22-56.jpg'></img>
  ### Side Bar
