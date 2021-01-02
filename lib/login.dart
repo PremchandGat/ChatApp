@@ -13,6 +13,7 @@ FirebaseAuth auth = FirebaseAuth.instance;
 class Login extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    EasyLoading.dismiss();
     return Scaffold(
         appBar: AppBar(
           title: Text("Login Page"),

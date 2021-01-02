@@ -83,6 +83,12 @@ class _ProfileState extends State<Profile> {
   var ageController = TextEditingController();
   var nameController = TextEditingController();
   @override
+  void initState() {
+    EasyLoading.dismiss();
+    super.initState();
+  }
+
+  @override
   Widget build(BuildContext context) {
     Refresh();
     return Scaffold(

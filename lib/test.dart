@@ -1,7 +1,11 @@
+import 'dart:io';
+import 'package:firebase_storage/firebase_storage.dart' as firebase_storage;
+
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_easyloading/flutter_easyloading.dart';
+import 'package:image_picker/image_picker.dart';
 
 FirebaseAuth auth = FirebaseAuth.instance;
 // ignore: non_constant_identifier_names
@@ -27,11 +31,70 @@ void Msg(sender, receiver, msg) {
         'receiver': receiver, // Stokes and Sons
         'msg': msg,
         'time': DateTime.now().millisecondsSinceEpoch,
-        'time1': DateTime.now() // 42
+        'time1': DateTime.now(),
+        'type': "txt" // 42
       })
       .then((value) => print('msg sent'))
-      .catchError(
-          (error) => EasyLoading.showToast("Failed to add user: $error"));
+      .catchError((error) => EasyLoading.showToast("Failed : $error"));
+}
+
+SendImg(sender, receiver) async {
+  String _img = await getImage();
+  if (_img != null) {
+    await uploadFile(_img);
+    String url = await downloadURLExample(_img);
+    List senderReceiver = [sender, receiver];
+    senderReceiver.sort((a, b) => a.compareTo(b));
+    CollectionReference users = FirebaseFirestore.instance
+        .collection('${senderReceiver[0]}+${senderReceiver[1]}');
+    users
+        .add({
+          'sender': sender, // John Doe
+          'receiver': receiver, // Stokes and Sons
+          'msg': url,
+          'time': DateTime.now().millisecondsSinceEpoch,
+          'time1': DateTime.now(),
+          'type': "link" // 42
+        })
+        .then((value) => print('msg sent'))
+        .catchError((error) => EasyLoading.showToast("Failed : $error"));
+  } else {}
+}
+
+Future getImage() async {
+  final picker = ImagePicker();
+  final pickedFile = await picker.getImage(source: ImageSource.gallery);
+  String _imagepath;
+  if (pickedFile != null) {
+    _imagepath = pickedFile.path;
+    return _imagepath;
+  } else {
+    EasyLoading.showToast("NO Image selected");
+    return _imagepath = null;
+  }
+}
+
+uploadFile(String filePath) async {
+  EasyLoading.show(status: "uploading image");
+  File file = File(filePath);
+  try {
+    await firebase_storage.FirebaseStorage.instance
+        .ref('$filePath')
+        .putFile(file);
+    EasyLoading.dismiss();
+  } on firebase_storage.FirebaseException catch (e) {
+    EasyLoading.dismiss();
+    EasyLoading.showToast(e.toString());
+  }
+}
+
+downloadURLExample(path) async {
+  EasyLoading.show(status: "Please Wait");
+  String downloadURL = await firebase_storage.FirebaseStorage.instance
+      .ref('$path')
+      .getDownloadURL();
+  EasyLoading.dismiss();
+  return downloadURL;
 }
 
 class MsgScreen extends StatefulWidget {
@@ -56,6 +119,7 @@ class _MsgScreenState extends State<MsgScreen> {
 
   @override
   void initState() {
+    EasyLoading.dismiss();
     super.initState();
   }
 
@@ -108,18 +172,24 @@ class _MsgScreenState extends State<MsgScreen> {
                                     width: MediaQuery.of(context).size.width *
                                         80 /
                                         100,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(16),
-                                      child: new Text(
-                                        document.data()['msg'],
-                                        style: TextStyle(
-                                          fontSize:
-                                              document.data()['msg'].length >= 5
-                                                  ? 16.0
-                                                  : 60,
-                                        ),
-                                      ),
-                                    )),
+                                    child: document.data()['type'] == 'txt'
+                                        ? Padding(
+                                            padding: EdgeInsets.all(16),
+                                            child: new Text(
+                                              document.data()['msg'],
+                                              style: TextStyle(
+                                                fontSize: document
+                                                            .data()['msg']
+                                                            .length >=
+                                                        5
+                                                    ? 16.0
+                                                    : 60,
+                                              ),
+                                            ),
+                                          )
+                                        : Image(
+                                            image: NetworkImage(
+                                                document.data()['msg']))),
                                 Container(
                                   height: 10,
                                 ),
@@ -135,24 +205,31 @@ class _MsgScreenState extends State<MsgScreen> {
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 new Container(
-                                    decoration: BoxDecoration(
-                                        borderRadius: BorderRadius.circular(20),
-                                        color: Colors.green[200]),
-                                    width: MediaQuery.of(context).size.width *
-                                        80 /
-                                        100,
-                                    child: Padding(
-                                      padding: EdgeInsets.all(16),
-                                      child: new Text(
-                                        document.data()['msg'],
-                                        style: TextStyle(
-                                          fontSize:
-                                              document.data()['msg'].length >= 5
+                                  decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(20),
+                                      color: Colors.green[200]),
+                                  width: MediaQuery.of(context).size.width *
+                                      80 /
+                                      100,
+                                  child: document.data()['type'] == 'txt'
+                                      ? Padding(
+                                          padding: EdgeInsets.all(16),
+                                          child: new Text(
+                                            document.data()['msg'],
+                                            style: TextStyle(
+                                              fontSize: document
+                                                          .data()['msg']
+                                                          .length >=
+                                                      5
                                                   ? 16.0
                                                   : 60,
-                                        ),
-                                      ),
-                                    )),
+                                            ),
+                                          ),
+                                        )
+                                      : Image(
+                                          image: NetworkImage(
+                                              document.data()['msg'])),
+                                ),
                                 Container(
                                   height: 10,
                                 ),
@@ -179,7 +256,7 @@ class _MsgScreenState extends State<MsgScreen> {
                   color: Colors.green[200],
                   borderRadius: BorderRadius.circular(20),
                 ),
-                width: MediaQuery.of(context).size.width * 85 / 100,
+                width: MediaQuery.of(context).size.width * 70 / 100,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(16.0, 3.0, 9.0, 3.0),
                   child: TextField(
@@ -197,6 +274,11 @@ class _MsgScreenState extends State<MsgScreen> {
                   ),
                 ),
               ),
+              IconButton(
+                  icon: Icon(Icons.attachment),
+                  onPressed: () async {
+                    SendImg(auth.currentUser.email, receiver);
+                  }),
               IconButton(
                   icon: Icon(Icons.send),
                   onPressed: () async {

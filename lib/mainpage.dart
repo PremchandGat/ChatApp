@@ -92,6 +92,7 @@ class _MainpageState extends State<Mainpage> {
 
   @override
   void initState() {
+    EasyLoading.dismiss();
     Refresh();
     UpdateData();
     super.initState();
@@ -238,7 +239,7 @@ class _MainpageState extends State<Mainpage> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => MsgScreen(
-                                    text: document.data()['name'],
+                                    text: document.data()['contact'],
                                   ),
                                 ));
                           },

@@ -15,6 +15,7 @@ class AddContact extends StatefulWidget {
 class _AddContactState extends State<AddContact> {
   @override
   void initState() {
+    EasyLoading.dismiss();
     super.initState();
   }
 
@@ -51,28 +52,7 @@ class _AddContactState extends State<AddContact> {
   }
 }
 
-void Add(usr) {
-  CollectionReference users =
-      FirebaseFirestore.instance.collection('${auth.currentUser.email}');
-  users.add({
-    'contact': usr,
-  }).then((value) {
-    EasyLoading.dismiss();
-    EasyLoading.showToast('User Added');
-  }).catchError((error) {
-    EasyLoading.dismiss();
-    EasyLoading.showToast('Failed to add user: $error');
-  });
-  CollectionReference user1 = FirebaseFirestore.instance.collection('$usr');
-  user1
-      .add({
-        'contact': auth.currentUser.email,
-      })
-      .then((value) => print("User Added"))
-      .catchError((error) => print("Failed to add user: $error"));
-}
-
-void Addd(usr) async {
+void Add(usr) async {
   bool checkincurrent = false;
   bool checkinother = false;
   await FirebaseFirestore.instance
@@ -101,27 +81,36 @@ void Addd(usr) async {
         .collection('$usr+profile')
         .get()
         .then((QuerySnapshot querySnapshot) => {
-              querySnapshot.docs.forEach((doc) {
-                usrinfo.add(doc['name']);
-                usrinfo.add(doc['phone']);
-                usrinfo.add(doc['age']);
-                usrinfo.add(doc['img']);
-              })
+              if (querySnapshot.size != 0)
+                {
+                  querySnapshot.docs.forEach((doc) {
+                    FirebaseFirestore.instance
+                        .collection('${auth.currentUser.email}')
+                        .add({
+                      'contact': usr,
+                      'name': doc['name'],
+                      'phone': doc['phone'],
+                      'age': doc['age'],
+                      'img': doc['img'],
+                    }).then((value) {
+                      EasyLoading.dismiss();
+                      EasyLoading.showToast('User Added');
+                    }).catchError((error) {
+                      EasyLoading.dismiss();
+                      EasyLoading.showToast('Failed to add user: $error');
+                    });
+                  })
+                }
+              else
+                {
+                  EasyLoading.dismiss(),
+                  EasyLoading.showToast('User does not exist')
+                }
             });
-    FirebaseFirestore.instance.collection('${auth.currentUser.email}').add({
-      'contact': usr,
-      'name': usrinfo[0],
-      'phone': usrinfo[1],
-      'age': usrinfo[2],
-      'img': usrinfo[3],
-    }).then((value) {
-      EasyLoading.dismiss();
-      EasyLoading.showToast('User Added');
-    }).catchError((error) {
-      EasyLoading.dismiss();
-      EasyLoading.showToast('Failed to add user: $error');
-    });
-  } else {}
+  } else {
+    EasyLoading.dismiss();
+    EasyLoading.showToast('User Already Added');
+  }
 
   if (checkinother == false) {
     List usrinfo1 = [];
@@ -130,24 +119,20 @@ void Addd(usr) async {
         .get()
         .then((QuerySnapshot querySnapshot) => {
               querySnapshot.docs.forEach((doc) {
-                usrinfo1.add(doc['name']);
-                usrinfo1.add(doc['phone']);
-                usrinfo1.add(doc['age']);
-                usrinfo1.add(doc['img']);
+                FirebaseFirestore.instance.collection('$usr').add({
+                  'contact': auth.currentUser.email,
+                  'name': doc['name'],
+                  'phone': doc['phone'],
+                  'age': doc['age'],
+                  'img': doc['img'],
+                }).then((value) {
+                  EasyLoading.dismiss();
+                  EasyLoading.showToast('User Added');
+                }).catchError((error) {
+                  EasyLoading.dismiss();
+                  EasyLoading.showToast('Failed to add user: $error');
+                });
               })
             });
-    FirebaseFirestore.instance.collection('$usr').add({
-      'contact': usr,
-      'name': usrinfo1[0],
-      'phone': usrinfo1[1],
-      'age': usrinfo1[2],
-      'img': usrinfo1[3],
-    }).then((value) {
-      EasyLoading.dismiss();
-      EasyLoading.showToast('User Added');
-    }).catchError((error) {
-      EasyLoading.dismiss();
-      EasyLoading.showToast('Failed to add user: $error');
-    });
   } else {}
 }
