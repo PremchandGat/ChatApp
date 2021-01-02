@@ -16,4 +16,13 @@ For help getting started with Flutter, view our
 samples, guidance on mobile development, and a full API reference.
  
  ## App UI images
+ ### Login Page
+ <img src = 'photo_2021-01-02_22-23-06.jpg'></img>
+ ### New user create
+ <img src = 'photo_2021-01-02_22-23-03.jpg'></img>
+  ### Main page
+ <img src = 'photo_2021-01-02_22-24-23.jpg'></img>
+ ### Chatting 
+  <img src = 'photo_2021-01-02_22-22-56.jpg'></img>
+ ### Side Bar
  <img src = 'photo_2021-01-02_22-22-53.jpg'></img>
